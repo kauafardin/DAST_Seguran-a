@@ -66,17 +66,23 @@ def index(busca: str = Query(default="")):
 def buscar_aluno(aluno: str):
     conn = sqlite3.connect("universidade.db")
     cursor = conn.cursor()
-    #  removemos o VAZAMENTO da query na resposta HTTP.
-    query = f"SELECT nome, nota FROM alunos WHERE nome = '{aluno}'"
+
+    # CORREÇÃO DO SQL INJECTION
+    # 1. Removemos a f-string.
+    # 2. Substituímos a variável diretamente na string por um placeholder '?'.
+    # Em bancos de dados como o PostgreSQL (via psycopg2) usar-se-ia '%s',
+    # mas no SQLite a convenção é a interrogação.
+    query = "SELECT nome, nota FROM alunos WHERE nome = ?"
 
     try:
-        cursor.execute(query)
+        # Passamos a variável 'aluno' como uma tupla (aluno,) no segundo argumento do método execute.
+        # A separação entre instrução e dados é feita internamente pelo driver do SQLite.
+        cursor.execute(query, (aluno,))
+
         resultados = cursor.fetchall()
-        # Removida a chave "query_executada" que expunha a query SQL ao atacante.
         return {"resultados": resultados}
     except Exception:
-      # Substituído o retorno de 'str(e)' por uma mensagem genérica.
-        # Nunca exponha o Stack Trace do banco de dados em produção.
+        # Substituído o retorno do erro nativo por uma mensagem genérica para evitar Information Disclosure.
         return {"erro": "Ocorreu um erro interno ao processar a busca."}
     finally:
         conn.close()
