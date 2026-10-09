@@ -1,9 +1,3 @@
-## Exemplo
-
-1- crie um repositorio no github com os seguintes elementeos, um `main.py` e um arquivo `dast.yml` na diretorio `.github/workflows/`
-
-```yaml
-
 name: Teste de Segurança DAST (OWASP ZAP)
 
 on:
@@ -57,5 +51,3 @@ jobs:
         with:
           name: relatorio-dast-html
           path: report_html.html
-
-```
